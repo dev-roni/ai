@@ -60,7 +60,12 @@ class AiService
             throw new Exception('Groq API এরর: ' . $response->body());
         }
 
-        return $response->json('choices.0.message.content') ?? '';
+        $content = $response->json('choices.0.message.content');
+
+        // <think>...</think> remove
+        $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
+
+        return trim($content);
     }
 
     // ---------------- GEMINI (Free, ভালো কোয়ালিটি) ----------------
