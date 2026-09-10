@@ -11,7 +11,7 @@ class AiService
 
     public function __construct()
     {
-        $this->provider = config('services.ai.provider', 'ollama');
+        $this->provider = config('services.ai.provider', 'groq');
     }
 
     /**
