@@ -56,6 +56,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest',
                     },
                     body: JSON.stringify({ prompt }),
                 });
