@@ -13,3 +13,5 @@ Route::get('/test-groq-models', function () {
 
 Route::get('/', [AiController::class, 'index'])->name('chat');
 Route::post('/ask', [AiController::class, 'ask'])->name('ai.ask');
+Route::get('/chat/{conversation}', [AiController::class, 'show'])->name('chat.show');
+Route::get('/conversations', [AiController::class, 'conversations'])->name('conversations.list');
