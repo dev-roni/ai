@@ -66,4 +66,9 @@ class AiController extends Controller
         }
     }
 
+    public function conversations()
+    {
+        return response()->json(Conversation::latest()->get());
+    }
+
 }
