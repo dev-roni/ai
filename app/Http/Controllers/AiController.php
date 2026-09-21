@@ -71,4 +71,12 @@ class AiController extends Controller
         return response()->json(Conversation::latest()->get());
     }
 
+    public function show(Conversation $conversation)
+    {
+        return view('chat', [
+            'conversation' => $conversation,
+            'messages' => $conversation->messages,
+        ]);
+    }
+
 }
