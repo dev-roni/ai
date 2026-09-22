@@ -44,6 +44,20 @@
         const token = document.querySelector('meta[name="csrf-token"]').content;
 
         let conversationId = {{ $conversation->id ?? 'null' }};
+        async function loadConversations() {
+            const res = await fetch("{{ route('conversations.list') }}");
+            const list = await res.json();
+            const container = document.getElementById('conv-list');
+            container.innerHTML = '';
+
+            list.forEach(c => {
+                const a = document.createElement('a');
+                a.href = `/chat/${c.id}`;
+                a.textContent = c.title || 'নতুন চ্যাট';
+                a.style.display = 'block';
+                container.appendChild(a);
+            });
+        }
 
         function addMessage(text, cls) {
             const div = document.createElement('div');
