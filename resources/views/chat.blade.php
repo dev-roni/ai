@@ -5,7 +5,8 @@
     <title>Laravel AI Chat</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
-        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; background: #f5f5f5; }
+        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; background: #f5f5f5; display: flex;}
+        #sidebar { width: 200px; }
         #chat-box { background: #fff; border-radius: 8px; padding: 20px; min-height: 300px; margin-bottom: 15px; }
         .msg { padding: 10px 14px; border-radius: 8px; margin: 8px 0; max-width: 80%; }
         .user { background: #dbeafe; margin-left: auto; text-align: right; }
@@ -14,6 +15,7 @@
         input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
         button { padding: 10px 20px; border: none; background: #2563eb; color: white; border-radius: 6px; cursor: pointer; }
         button:disabled { background: #93c5fd; }
+
     </style>
 </head>
 <body>
