@@ -18,7 +18,11 @@
 </head>
 <body>
     <h2>🤖 Laravel AI Chat</h2>
-    <div id="chat-box"></div>
+    <div id="chat-box">
+        @foreach($messages as $m)
+            <div class="msg {{ $m->role === 'user' ? 'user' : 'ai' }}">{{ $m->content }}</div>
+        @endforeach
+    </div>
 
     <form id="chat-form">
         <input type="text" id="prompt" placeholder="কিছু জিজ্ঞেস করুন..." autocomplete="off" required>
@@ -31,6 +35,8 @@
         const input = document.getElementById('prompt');
         const btn = document.getElementById('send-btn');
         const token = document.querySelector('meta[name="csrf-token"]').content;
+
+        let conversationId = {{ $conversation->id ?? 'null' }};
 
         function addMessage(text, cls) {
             const div = document.createElement('div');
@@ -58,7 +64,7 @@
                         'X-CSRF-TOKEN': token,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify({ prompt }),
+                    body: JSON.stringify({ prompt, conversation_id: conversationId }),
                 });
                 const data = await res.json();
                 box.lastChild.remove(); // "ভাবছে" রিমুভ
@@ -67,6 +73,10 @@
                     addMessage('⚠️ ' + data.error, 'ai');
                 } else {
                     addMessage(data.reply, 'ai');
+                    if (!conversationId) {
+                        conversationId = data.conversation_id;
+                        history.pushState({}, '', `/chat/${conversationId}`);
+                    }
                 }
             } catch (err) {
                 box.lastChild.remove();

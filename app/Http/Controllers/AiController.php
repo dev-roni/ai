@@ -19,7 +19,10 @@ class AiController extends Controller
     // চ্যাট পেজ দেখানো
     public function index()
     {
-        return view('chat');
+        return view('chat', [
+            'conversation' => null,
+            'messages' => collect(),
+        ]);
     }
 
      // AJAX দিয়ে প্রশ্ন পাঠানো, উত্তর ফেরত পাওয়া
