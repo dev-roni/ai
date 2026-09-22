@@ -17,6 +17,11 @@
     </style>
 </head>
 <body>
+    <div id="sidebar">
+        <a href="{{ route('chat') }}">+ নতুন চ্যাট</a>
+        <h3>হিস্টোরি</h3>
+        <div id="conv-list"></div>
+    </div>
     <h2>🤖 Laravel AI Chat</h2>
     <div id="chat-box">
         @foreach($messages as $m)
