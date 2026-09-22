@@ -98,6 +98,7 @@
                         conversationId = data.conversation_id;
                         history.pushState({}, '', `/chat/${conversationId}`);
                     }
+                    loadConversations(); // নতুন চ্যাট সাইডবারে দেখানোর জন্য
                 }
             } catch (err) {
                 box.lastChild.remove();
@@ -106,6 +107,7 @@
                 btn.disabled = false;
             }
         });
+        loadConversations();
     </script>
 </body>
 </html>
