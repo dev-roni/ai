@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AiController;
 
-//available model name
+//available model name test
 Route::get('/test-groq-models', function () {
     return \Illuminate\Support\Facades\Http::withToken(config('services.groq.key'))
         ->get('https://api.groq.com/openai/v1/models')

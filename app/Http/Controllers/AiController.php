@@ -82,4 +82,10 @@ class AiController extends Controller
         ]);
     }
 
+    public function destroy(Conversation $conversation)
+    {
+        $conversation->delete();
+        return response()->json(['deleted' => true]);
+    }
+
 }
