@@ -459,6 +459,36 @@
             border-radius: 10px;
         }
 
+        .conv-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+        .conv-item:hover {
+            background: #f0f0f0;
+        }
+        .conv-item a {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-decoration: none;
+            color: #333;
+        }
+        .conv-item button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #888;
+            padding: 0 4px;
+        }
+        .conv-item button:hover {
+            color: red;
+        }
+
 
         /* =========================
         MOBILE
