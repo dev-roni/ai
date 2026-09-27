@@ -1168,32 +1168,32 @@
             container.innerHTML = '';
 
             list.forEach(c => {
-                //conversation link hisabe asbe
+                const item = document.createElement('div');
+                item.className = 'conv-item';
+
                 const a = document.createElement('a');
                 a.href = `/chat/${c.id}`;
-                a.textContent = c.title || 'নতুন চ্যাট';
-                a.style.display = 'block';
-                container.appendChild(a);
+                a.textContent = truncateTitle(c.title);
+                item.appendChild(a);
 
-                //delete button and delete proccess
                 const delBtn = document.createElement('button');
                 delBtn.textContent = '✕';
                 delBtn.onclick = async (e) => {
                     e.preventDefault();
                     if (!confirm('ডিলিট করবেন?')) return;
-
                     await fetch(`/conversations/${c.id}`, {
                         method: 'DELETE',
                         headers: { 'X-CSRF-TOKEN': token },
                     });
-
                     if (c.id === conversationId) {
                         window.location.href = "{{ route('chat') }}";
                     } else {
                         loadConversations();
                     }
                 };
-                container.appendChild(delBtn); 
+                item.appendChild(delBtn);
+
+                container.appendChild(item);
             });
 
 
