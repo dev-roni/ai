@@ -519,6 +519,7 @@
             }
 
         }
+
     </style>
 
  
@@ -1247,7 +1248,16 @@
                 btn.disabled = false;
             }
         });
+
+        // টাইটেল লম্বা হলে ... দেখাবে
+        function truncateTitle(title) {
+            if (!title) return 'নতুন চ্যাট';
+            const words = title.trim().split(/\s+/);
+            if (words.length <= 3) return title;
+            return words.slice(0, 3).join(' ') + '...';
+        }
         loadConversations();
+
     </script>
 </body>
 </html>
