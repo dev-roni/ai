@@ -82,6 +82,19 @@ class AiController extends Controller
         ]);
     }
 
+    public function update(Request $request, Conversation $conversation)
+    {
+        $request->validate([
+            'title' => 'required|string|max:100',
+        ]);
+
+        $conversation->update([
+            'title' => $request->input('title'),
+        ]);
+
+        return response()->json(['title' => $conversation->title]);
+    }
+
     public function destroy(Conversation $conversation)
     {
         $conversation->delete();
