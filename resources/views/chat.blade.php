@@ -1204,6 +1204,40 @@
                 const a = document.createElement('a');
                 a.href = `/chat/${c.id}`;
                 a.textContent = truncateTitle(c.title);
+                a.ondblclick = (e) => {
+                    e.preventDefault();
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = c.title || '';
+                    input.className = 'edit-title-input';
+
+                    a.replaceWith(input);
+                    input.focus();
+                    input.select();
+
+                    const save = async () => {
+                        const newTitle = input.value.trim();
+                        if (newTitle && newTitle !== c.title) {
+                            await fetch(`/conversations/${c.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                },
+                                body: JSON.stringify({ title: newTitle }),
+                            });
+                            c.title = newTitle;
+                        }
+                        loadConversations(); // পুরনো <a> ফিরিয়ে আনার সহজ উপায়
+                    };
+
+                    input.addEventListener('blur', save);
+                    input.addEventListener('keydown', (ev) => {
+                        if (ev.key === 'Enter') input.blur(); // Enter চাপলে blur() ট্রিগার হয়ে save() চলবে
+                        if (ev.key === 'Escape') loadConversations(); // ক্যানসেল
+                    });
+                };
                 item.appendChild(a);
 
                 const delBtn = document.createElement('button');
