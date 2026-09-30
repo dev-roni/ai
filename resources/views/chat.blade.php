@@ -1204,9 +1204,24 @@
                 const a = document.createElement('a');
                 a.href = `/chat/${c.id}`;
                 a.textContent = truncateTitle(c.title);
-                a.ondblclick = (e) => {
+                a.onclick = (e) => {
                     e.preventDefault();
 
+                    if (a.clickTimer) {
+                        // এটা দ্বিতীয় ক্লিক (মানে ডাবল-ক্লিক হয়েছে) → নেভিগেট বাতিল, এডিট মোডে যাও
+                        clearTimeout(a.clickTimer);
+                        a.clickTimer = null;
+                        startEdit();
+                    } else {
+                        // প্রথম ক্লিক → একটু অপেক্ষা করো, দ্বিতীয় ক্লিক না এলে তখন নেভিগেট করো
+                        a.clickTimer = setTimeout(() => {
+                            a.clickTimer = null;
+                            window.location.href = `/chat/${c.id}`;
+                        }, 250);
+                    }
+                };
+
+                function startEdit() {
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.value = c.title || '';
@@ -1229,15 +1244,15 @@
                             });
                             c.title = newTitle;
                         }
-                        loadConversations(); // পুরনো <a> ফিরিয়ে আনার সহজ উপায়
+                        loadConversations();
                     };
 
                     input.addEventListener('blur', save);
                     input.addEventListener('keydown', (ev) => {
-                        if (ev.key === 'Enter') input.blur(); // Enter চাপলে blur() ট্রিগার হয়ে save() চলবে
-                        if (ev.key === 'Escape') loadConversations(); // ক্যানসেল
+                        if (ev.key === 'Enter') input.blur();
+                        if (ev.key === 'Escape') loadConversations();
                     });
-                };
+                }
                 item.appendChild(a);
 
                 const delBtn = document.createElement('button');
