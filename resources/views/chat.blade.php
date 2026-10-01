@@ -142,6 +142,14 @@
             border-top: 1px solid rgba(255,255,255,0.08);
         }
 
+        .edit-title-input {
+            flex: 1;
+            padding: 2px 4px;
+            border: 1px solid #2563eb;
+            border-radius: 4px;
+            font-size: inherit;
+        }
+
 
         /* =========================
         MAIN CHAT
