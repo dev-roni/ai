@@ -68,6 +68,48 @@ class AiService
         return trim($content);
     }
 
+    //SSE streming
+    public function streamGroq(array $messages, callable $onChunk): string
+    {
+        $fullReply = '';
+
+        $response = Http::withToken(config('services.groq.key'))
+            ->withOptions(['stream' => true])
+            ->timeout(60)
+            ->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => config('services.groq.model'),
+                'messages' => $messages,
+                'stream' => true,
+            ]);
+
+        $body = $response->toPsrResponse()->getBody();
+        $buffer = '';
+
+        while (!$body->eof()) {
+            $buffer .= $body->read(64);
+
+            while (($pos = strpos($buffer, "\n")) !== false) {
+                $line = trim(substr($buffer, 0, $pos));
+                $buffer = substr($buffer, $pos + 1);
+
+                if ($line === '' || !str_starts_with($line, 'data: ')) continue;
+
+                $data = substr($line, 6); // "data: " প্রিফিক্সটা বাদ দিচ্ছি
+
+                if ($data === '[DONE]') break 2; // স্ট্রিম শেষ, দুই লুপ থেকেই বের হও
+
+                $json = json_decode($data, true);
+                $chunk = $json['choices'][0]['delta']['content'] ?? null;
+
+                if ($chunk !== null) {
+                    $fullReply .= $chunk;
+                    $onChunk($chunk);
+                }
+            }
+        }
+
+        return $fullReply;
+    }
     // ---------------- GEMINI (Free, ভালো কোয়ালিটি) ----------------
     protected function askGemini(array $messages): string
     {
