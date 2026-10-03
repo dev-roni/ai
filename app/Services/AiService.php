@@ -45,6 +45,42 @@ class AiService
 
         return $response->json('message.content') ?? '';
     }
+    //SSE streming ollama
+    public function streamOllama(array $messages, callable $onChunk): string
+    {
+        $fullReply = '';
+
+        $response = Http::withOptions(['stream' => true])
+            ->timeout(120)
+            ->post(config('services.ollama.base_url') . '/api/chat', [
+                'model' => config('services.ollama.model'),
+                'messages' => $messages,
+                'stream' => true,
+            ]);
+
+        $body = $response->toPsrResponse()->getBody();
+        $buffer = '';
+
+        while (!$body->eof()) {
+            $buffer .= $body->read(8);
+
+            while (($pos = strpos($buffer, "\n")) !== false) {
+                $line = substr($buffer, 0, $pos);
+                $buffer = substr($buffer, $pos + 1);
+
+                if (trim($line) === '') continue;
+
+                $json = json_decode($line, true);
+                if (isset($json['message']['content'])) {
+                    $chunk = $json['message']['content'];
+                    $fullReply .= $chunk;
+                    $onChunk($chunk);
+                }
+            }
+        }
+
+        return $fullReply;
+    }
 
     // ---------------- GROQ (Free, খুব ফাস্ট) ----------------
     protected function askGroq(array $messages): string
@@ -68,7 +104,7 @@ class AiService
         return trim($content);
     }
 
-    //SSE streming
+    //SSE streming groq
     public function streamGroq(array $messages, callable $onChunk): string
     {
         $fullReply = '';
