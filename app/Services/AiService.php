@@ -27,6 +27,14 @@ class AiService
         };
     }
 
+    public function stream(array $messages, callable $onChunk): string
+    {
+        return match ($this->provider) {
+            'groq' => $this->streamGroq($messages, $onChunk),
+            default => $this->streamOllama($messages, $onChunk),
+        };
+    }
+
     // ---------------- OLLAMA (Local, ৮GB RAM friendly) ----------------
     protected function askOllama(array $messages): string
     {
