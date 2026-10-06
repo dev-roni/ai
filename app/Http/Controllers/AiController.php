@@ -69,6 +69,62 @@ class AiController extends Controller
         }
     }
 
+    public function askStream(Request $request)
+    {
+        $request->validate([
+            'prompt' => 'required|string|max:2000',
+            'conversation_id' => 'nullable|exists:conversations,id',
+        ]);
+
+        $conversation = $request->input('conversation_id')
+            ? Conversation::findOrFail($request->input('conversation_id'))
+            : Conversation::create([
+                'title' => str($request->input('prompt'))->limit(40),
+            ]);
+
+        $conversation->messages()->create([
+            'role' => 'user',
+            'content' => $request->input('prompt'),
+        ]);
+
+        $history = $conversation->messages()
+            ->orderBy('id')
+            ->get(['role', 'content'])
+            ->map(fn ($m) => ['role' => $m->role, 'content' => $m->content])
+            ->toArray();
+
+        return response()->stream(function () use ($history, $conversation) {
+
+            // প্রথম ইভেন্টে conversation_id পাঠিয়ে দিচ্ছি (নতুন চ্যাট হলে ফ্রন্টএন্ডের জানা দরকার)
+            echo "event: meta\n";
+            echo 'data: ' . json_encode(['conversation_id' => $conversation->id]) . "\n\n";
+            ob_flush();
+            flush();
+
+            $fullReply = $this->ai->stream($history, function ($chunk) {
+                echo "event: chunk\n";
+                echo 'data: ' . json_encode(['content' => $chunk]) . "\n\n";
+                ob_flush();
+                flush();
+            });
+
+            $conversation->messages()->create([
+                'role' => 'assistant',
+                'content' => $fullReply,
+            ]);
+
+            echo "event: done\n";
+            echo "data: {}\n\n";
+            ob_flush();
+            flush();
+
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
     public function conversations()
     {
         return response()->json(Conversation::latest()->get());
