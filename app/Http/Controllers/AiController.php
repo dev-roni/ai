@@ -92,6 +92,7 @@ class AiController extends Controller
             ->get(['role', 'content'])
             ->map(fn ($m) => ['role' => $m->role, 'content' => $m->content])
             ->toArray();
+        $history = array_slice($history, -10);
 
         return response()->stream(function () use ($history, $conversation) {
 
