@@ -1293,6 +1293,7 @@
             div.textContent = text;
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
+            return div; 
         }
 
         form.addEventListener('submit', async (e) => {
@@ -1303,34 +1304,56 @@
             addMessage(prompt, 'user');
             input.value = '';
             btn.disabled = true;
-            addMessage('...ভাবছে', 'ai');
+
+            const aiDiv = addMessage('', 'ai'); // খালি div বানিয়ে রাখলাম, পরে ধীরে ধীরে টেক্সট বসবে
 
             try {
-                const res = await fetch("{{ route('ai.ask') }}", {
+                const res = await fetch("{{ route('ai.ask.stream') }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': token,
-                        'X-Requested-With': 'XMLHttpRequest',
                     },
                     body: JSON.stringify({ prompt, conversation_id: conversationId }),
                 });
-                const data = await res.json();
-                box.lastChild.remove(); // "ভাবছে" রিমুভ
 
-                if (data.error) {
-                    addMessage('⚠️ ' + data.error, 'ai');
-                } else {
-                    addMessage(data.reply, 'ai');
-                    if (!conversationId) {
-                        conversationId = data.conversation_id;
-                        history.pushState({}, '', `/chat/${conversationId}`);
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // SSE ইভেন্টগুলো "\n\n" দিয়ে আলাদা হয়
+                    let parts = buffer.split('\n\n');
+                    buffer = parts.pop(); // শেষ অংশ অসম্পূর্ণ হতে পারে, পরের বারের জন্য রেখে দিলাম
+
+                    for (const part of parts) {
+                        const eventMatch = part.match(/^event: (.+)$/m);
+                        const dataMatch = part.match(/^data: (.+)$/m);
+                        if (!eventMatch || !dataMatch) continue;
+
+                        const eventType = eventMatch[1];
+                        const data = JSON.parse(dataMatch[1]);
+
+                        if (eventType === 'meta') {
+                            if (!conversationId) {
+                                conversationId = data.conversation_id;
+                                history.pushState({}, '', `/chat/${conversationId}`);
+                            }
+                        } else if (eventType === 'chunk') {
+                            aiDiv.textContent += data.content;
+                            box.scrollTop = box.scrollHeight;
+                        } else if (eventType === 'done') {
+                            loadConversations();
+                        }
                     }
-                    loadConversations(); // নতুন চ্যাট সাইডবারে দেখানোর জন্য
                 }
             } catch (err) {
-                box.lastChild.remove();
-                addMessage('⚠️ সার্ভারে সমস্যা হয়েছে', 'ai');
+                aiDiv.textContent = '⚠️ সার্ভারে সমস্যা হয়েছে';
             } finally {
                 btn.disabled = false;
             }
