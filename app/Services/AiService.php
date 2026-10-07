@@ -125,7 +125,15 @@ class AiService
                 'messages' => $messages,
                 'stream' => true,
             ]);
-
+            // loggin
+            if ($response->failed()) {
+                \Log::error('Groq stream failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                $onChunk('⚠️ Groq এরর: ' . $response->status() . ' — ' . $response->body());
+                return '';
+            }
         $body = $response->toPsrResponse()->getBody();
         $buffer = '';
 
