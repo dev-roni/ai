@@ -134,6 +134,18 @@ class AiService
                 $onChunk('⚠️ Groq এরর: ' . $response->status() . ' — ' . $response->body());
                 return '';
             }
+            if ($response->status() === 429) {
+                $wait = (int) $response->header('retry-after');
+                $msg = 'এই মুহূর্তে অনেক বেশি রিকোয়েস্ট হয়ে গেছে।';
+                $msg .= $wait
+                    ? " প্রায় {$wait} সেকেন্ড পর আবার চেষ্টা করুন।"
+                    : ' একটু পরে আবার চেষ্টা করুন।';
+                throw new \Exception($msg, 429);
+            }
+
+            if ($response->failed()) {
+                throw new \Exception('AI সার্ভিস থেকে উত্তর পাওয়া যায়নি।', $response->status());
+            }
         $body = $response->toPsrResponse()->getBody();
         $buffer = '';
 
