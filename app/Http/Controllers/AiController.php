@@ -92,7 +92,7 @@ class AiController extends Controller
             ->get(['role', 'content'])
             ->map(fn ($m) => ['role' => $m->role, 'content' => $m->content])
             ->toArray();
-        $history = array_slice($history, -10);
+        $history = array_slice($history, -5);
 
         return response()->stream(function () use ($history, $conversation) {
 
@@ -102,22 +102,38 @@ class AiController extends Controller
             ob_flush();
             flush();
 
-            $fullReply = $this->ai->stream($history, function ($chunk) {
-                echo "event: chunk\n";
-                echo 'data: ' . json_encode(['content' => $chunk]) . "\n\n";
+            try {
+                $fullReply = $this->ai->stream($history, function ($chunk) {
+                    echo "event: chunk\n";
+                    echo 'data: ' . json_encode(['content' => $chunk]) . "\n\n";
+                    ob_flush();
+                    flush();
+                });
+
+                if (trim($fullReply) !== '') {
+                    $conversation->messages()->create([
+                        'role' => 'assistant',
+                        'content' => $fullReply,
+                    ]);
+                }
+
+                echo "event: done\n";
+                echo "data: {}\n\n";
                 ob_flush();
                 flush();
-            });
 
-            $conversation->messages()->create([
-                'role' => 'assistant',
-                'content' => $fullReply,
-            ]);
+            } catch (\Throwable $e) {
+                report($e); // Laravel-এর লগে সেভ হবে, ডিবাগ করতে কাজে লাগবে
 
-            echo "event: done\n";
-            echo "data: {}\n\n";
-            ob_flush();
-            flush();
+                $message = $e->getCode() === 429
+                    ? $e->getMessage()
+                    : 'দুঃখিত, কিছু একটা সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।';
+
+                echo "event: error\n";
+                echo 'data: ' . json_encode(['message' => $message]) . "\n\n";
+                ob_flush();
+                flush();
+            }
 
         }, 200, [
             'Content-Type' => 'text/event-stream',
