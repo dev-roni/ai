@@ -497,6 +497,12 @@
             color: red;
         }
 
+        .msg.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
 
         /* =========================
         MOBILE
