@@ -1349,7 +1349,11 @@
                             box.scrollTop = box.scrollHeight;
                         } else if (eventType === 'done') {
                             loadConversations();
+                        } else if (eventType === 'error') {
+                            aiDiv.textContent += (aiDiv.textContent ? '\n\n' : '') + '⚠️ ' + data.message;
+                            aiDiv.classList.add('error');
                         }
+                        
                     }
                 }
             } catch (err) {
